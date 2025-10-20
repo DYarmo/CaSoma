@@ -52,34 +52,27 @@ class alignTable(QTableWidget):
 
 
 class Alignment_GUI(QMainWindow):
-        
+
+    ## Initialize GUI with provided dataset, or ask for user selection
+
     def __init__(self, input_data=None):
         super().__init__()
-        self.initUI(input_data=input_data)
-
+        self.initUI(input_data=input_data) 
+        
     def initUI(self, input_data=None):
         
-        # Figure setup:
+        # Figure appearance setup:
         
-        
-        
+
         self.setGeometry(0, 30, 1800, 600)
         self.setWindowTitle('Multi session alignment')
         p=self.palette()
         p.setColor(self.backgroundRole(), Qt.white)
         self.setPalette(p)
 
-        
-                                 
 
-        #self.data_table = QTableWidget(self)
-        
-       
-        
-        
-        
-        self.data_table = alignTable(self)
-        self.data_table.setAcceptDrops(False)##True)
+        self.data_table = alignTable(self)  ###Main data table displayes ROI-Neuron assignments across experiments
+        self.data_table.setAcceptDrops(False)##True) 
         self.data_table.setDragEnabled(False)##True)
   #      self.data_table.cellChanged.connect(self.update_data_model)
         
@@ -87,7 +80,8 @@ class Alignment_GUI(QMainWindow):
         self.clickActions['None'] = self.doNothing
         self.clickActions['Select ROI'] = self.selectROI
         self.clickAction = 'Select ROI'
-        
+
+        ### Set up dict containing default action and linked functions
         self.dataFuncs = {}
         self.dataFuncs['Align cells'] = self.align_ROIs
         self.dataFuncs['Align manually'] = self.align_manually
@@ -101,8 +95,6 @@ class Alignment_GUI(QMainWindow):
         self.dataFuncs['Set parameters'] = self.set_params
         self.dataFuncs['Reset parameters'] = self.set_default_params
         #self.dataFuncs['Debug...'] = self.debug
-        
-        
         
         self.displayFuncs = {}
         self.displayFuncs['Show spatial union'] = self.display_spatial_union
@@ -122,21 +114,18 @@ class Alignment_GUI(QMainWindow):
             self.run_mode = 'child'
             self.data_path = input_data['pickle file path']
             
-        
-       
         self.original_data = DY.unpickle(self.data_path)
         self.data = copy.deepcopy(self.original_data)
-        
-       
-        
+
+        ##Set color code for experiment ID:
         if hasattr(self.data, 'sess_color_series'):
             self.sess_color_series = self.data.sess_color_series
-            
         else:
             self.sess_color_series= multi_sess_color_series()
             self.data.sess_color_series = self.sess_color_series
         print(f'{self.sess_color_series=}')
-        
+
+        ##Populate menus
         self.main_menu = QMenuBar(self)
         
         file_menu = self.main_menu.addMenu('&File')
@@ -161,7 +150,6 @@ class Alignment_GUI(QMainWindow):
         file_menu.addAction(saveConfigAction)
         file_menu.addAction(loadConfigAction)
         
-        
         self.analyze_menu = self.main_menu.addMenu('&Analyze')
         for key in self.dataFuncs.keys():
             action = QAction(key, self)
@@ -173,17 +161,10 @@ class Alignment_GUI(QMainWindow):
         self.initialize_layout()
         
         ################
-        
-        self.data_table.itemSelectionChanged.connect(self.update_views)
-     
-        
-    
 
-         
-        
-        
-        
-        
+        ## Connect changes in selected data to update display
+        self.data_table.itemSelectionChanged.connect(self.update_views)
+
         display_menu = self.main_menu.addMenu('&Display')
         for key in self.displayFuncs.keys():
             action = QAction(key, self)
